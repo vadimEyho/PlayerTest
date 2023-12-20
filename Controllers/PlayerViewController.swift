@@ -5,7 +5,7 @@ protocol PlayerViewControllerDelegate: AnyObject {
     func playbackStateChanged(isPlaying: Bool, currentIndex: Int)
 }
 
-class PlayerViewController: UIViewController {
+class PlayerViewController: UIViewController  {
 
     @IBOutlet weak var trackTitleLabel: UILabel!
     @IBOutlet weak var artistLabel: UILabel!
@@ -22,6 +22,7 @@ class PlayerViewController: UIViewController {
     var currentIndex: Int = 0
     var tracks: [Track] = []
     var selectedTrack: Track?
+
     var updateTimer: Timer?
 
     weak var delegate: PlayerViewControllerDelegate?
@@ -35,7 +36,6 @@ class PlayerViewController: UIViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        // Остановка таймера обновления UI
         stopUpdateTimer()
     }
 
@@ -57,12 +57,8 @@ class PlayerViewController: UIViewController {
     }
 
     func setupAudioPlayer() {
-        guard let track = track else {
+        guard let track = track, audioPlayer == nil else {
             return
-        }
-
-        if let existingPlayer = audioPlayer {
-            existingPlayer.stop()
         }
 
         if let url = Bundle.main.url(forResource: track.fileName, withExtension: "mp3") {
@@ -78,22 +74,30 @@ class PlayerViewController: UIViewController {
             print("Audio file not found.")
         }
     }
-
+    
     func play() {
-        audioPlayer?.play()
-        playPauseButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
-        updateUI()
-        // Уведомляем делегата о смене состояния воспроизведения
-        delegate?.playbackStateChanged(isPlaying: true, currentIndex: currentIndex)
-    }
+            guard let player = audioPlayer else {
+                return
+            }
 
-    func pause() {
-        audioPlayer?.pause()
-        playPauseButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
-        updateUI()
-        // Уведомляем делегата о смене состояния воспроизведения
-        delegate?.playbackStateChanged(isPlaying: false, currentIndex: currentIndex)
-    }
+            if !player.isPlaying {
+                player.play()
+                playPauseButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
+                startUpdateTimer()
+            }
+        }
+
+        func pause() {
+            guard let player = audioPlayer else {
+                return
+            }
+
+            if player.isPlaying {
+                player.pause()
+                playPauseButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+                stopUpdateTimer()
+            }
+        }
 
     func playNextTrack() {
         if tracks.isEmpty {
@@ -136,8 +140,10 @@ class PlayerViewController: UIViewController {
         if let player = audioPlayer {
             if player.isPlaying {
                 pause()
+                print("Paused")
             } else {
                 play()
+                print("Playing")
             }
         }
     }
@@ -151,12 +157,10 @@ class PlayerViewController: UIViewController {
     }
 
     @IBAction func closeButtonTapped(_ sender: UIButton) {
-        // Остановка таймера и аудиоплеера при закрытии экрана
-        stopUpdateTimer()
-        audioPlayer?.stop()
-        dismiss(animated: true, completion: nil)
-    }
-
+            AudioManager.shared.stopAudio()
+            delegate?.playbackStateChanged(isPlaying: false, currentIndex: currentIndex)
+            dismiss(animated: true, completion: nil)
+        }
     @IBAction func progressSliderValueChanged(_ sender: UISlider) {
         if let player = audioPlayer {
             player.currentTime = TimeInterval(sender.value) * player.duration
@@ -181,14 +185,17 @@ extension PlayerViewController {
         let seconds = Int(time) % 60
         return String(format: "%02d:%02d", minutes, seconds)
     }
-
+    
     func updateUI() {
         guard let player = audioPlayer else {
             return
         }
-
+        
         currentTimeLabel.text = formatTime(player.currentTime)
         progressSlider.value = Float(player.currentTime / player.duration)
         durationLabel.text = formatTime(player.duration)
+        
+        // Обновляем делегата, если он установлен
+        delegate?.playbackStateChanged(isPlaying: player.isPlaying, currentIndex: currentIndex)
     }
 }
