@@ -12,11 +12,13 @@ class TrackListViewController: UITableViewController, PlayerViewControllerDelega
     func setupTracks() {
         // Загрузите ваши треки
         tracks = [
-            Track(title: "На заре", artist: "АИГЕЛ", fileName: "АИГЕЛ - Пыяла"),
-            Track(title: "На заре", artist: "Баста", fileName: "Баста - На заре"),
-            Track(title: "Прощание", artist: "Три дня дождя, MONA", fileName: "Три дня дождя, MONA - Прощание")
+            Track(title: "На заре", artist: "АИГЕЛ", fileName: "АИГЕЛ - Пыяла", duration: 0, totalDuration: 3*60 + 40),  // Установите продолжительность трека
+            Track(title: "На заре", artist: "Баста", fileName: "Баста - На заре", duration: 0, totalDuration: 3*60 + 40),
+            Track(title: "Прощание", artist: "Три дня дождя, MONA", fileName: "Три дня дождя, MONA - Прощание", duration: 0, totalDuration: 3*60 + 40)
         ]
     }
+
+
 
     // MARK: - Table view data source
 
@@ -25,14 +27,29 @@ class TrackListViewController: UITableViewController, PlayerViewControllerDelega
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "TrackCell")
+        let cell = UITableViewCell(style: .default, reuseIdentifier: "TrackCell")
 
         let track = tracks[indexPath.row]
-        cell.textLabel?.text = track.title
-        cell.detailTextLabel?.text = track.artist
+        let artistTitle = "\(track.artist) - \(track.title)"
+        let durationText = formatTime(track.totalDuration)
+
+        cell.textLabel?.text = "\(artistTitle) \(durationText)"
+        cell.textLabel?.font = UIFont.systemFont(ofSize: 10)
 
         return cell
     }
+
+
+
+
+    
+    func formatTime(_ time: TimeInterval) -> String {
+        let minutes = Int(time) / 60
+        let seconds = Int(time) % 60
+        return String(format: "%02d:%02d", minutes, seconds)
+    }
+
+
 
     // MARK: - Table view delegate
 

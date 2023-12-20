@@ -60,18 +60,18 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="7Om-W0-0Iq">
-                                <rect key="frame" x="111.00000000000001" y="621" width="171.33333333333337" height="34.333333333333371"/>
+                                <rect key="frame" x="121.33333333333333" y="621" width="150.66666666666669" height="34.333333333333371"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iKw-J4-y2o">
-                                        <rect key="frame" x="0.0" y="0.0" width="56" height="34.333333333333336"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="45.666666666666664" height="34.333333333333336"/>
                                         <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="plain" image="backward" catalog="system"/>
+                                        <buttonConfiguration key="configuration" style="plain" image="backward.end" catalog="system"/>
                                         <connections>
                                             <action selector="prevButtonTapped:" destination="sHc-HO-GBy" eventType="touchUpInside" id="mks-ig-Lfv"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Up2-xX-KME">
-                                        <rect key="frame" x="64" y="0.0" width="43.333333333333343" height="34.333333333333336"/>
+                                        <rect key="frame" x="53.666666666666671" y="0.0" width="43.333333333333329" height="34.333333333333336"/>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="plain" image="play" catalog="system"/>
                                         <connections>
@@ -79,9 +79,9 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vpg-fZ-dSg">
-                                        <rect key="frame" x="115.33333333333334" y="0.0" width="56" height="34.333333333333336"/>
+                                        <rect key="frame" x="105.00000000000001" y="0.0" width="45.666666666666671" height="34.333333333333336"/>
                                         <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="plain" image="forward" catalog="system"/>
+                                        <buttonConfiguration key="configuration" style="plain" image="forward.end" catalog="system"/>
                                         <connections>
                                             <action selector="nextButtonTapped:" destination="sHc-HO-GBy" eventType="touchUpInside" id="2y3-kM-G4A"/>
                                         </connections>
@@ -156,8 +156,8 @@
         </scene>
     </scenes>
     <resources>
-        <image name="backward" catalog="system" width="128" height="77"/>
-        <image name="forward" catalog="system" width="128" height="77"/>
+        <image name="backward.end" catalog="system" width="128" height="120"/>
+        <image name="forward.end" catalog="system" width="128" height="120"/>
         <image name="play" catalog="system" width="117" height="128"/>
         <image name="xmark" catalog="system" width="128" height="113"/>
         <systemColor name="systemBackgroundColor">

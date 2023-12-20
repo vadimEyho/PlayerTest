@@ -11,4 +11,7 @@ struct Track: Equatable {
     let title: String
     let artist: String
     let fileName: String
+    var duration: TimeInterval
+    var totalDuration: TimeInterval  // Новое поле для общей длительности трека
 }
+

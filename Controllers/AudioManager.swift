@@ -26,8 +26,15 @@ class AudioManager: NSObject {
                 audioPlayer?.delegate = self
                 audioPlayer?.prepareToPlay()
                 audioPlayer?.play()
-                currentTrack = tracks.first { $0.fileName == fileName }
-                self.tracks = tracks
+
+                if let selectedTrack = tracks.first(where: { $0.fileName == fileName }) {
+                    currentTrack = selectedTrack
+                    self.tracks = tracks
+                    // Установите продолжительность для текущего трека
+                    currentTrack?.duration = audioPlayer?.duration ?? 0
+                    // Установите общую продолжительность для текущего трека
+                    currentTrack?.totalDuration = tracks.reduce(0) { $0 + $1.duration }
+                }
             } catch {
                 print("Error loading audio file: \(error.localizedDescription)")
             }
@@ -35,6 +42,8 @@ class AudioManager: NSObject {
             print("Audio file not found.")
         }
     }
+
+
 
     func stop() {
         audioPlayer?.stop()

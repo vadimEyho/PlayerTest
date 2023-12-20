@@ -45,7 +45,12 @@ class PlayerViewController: UIViewController {
         artistLabel.text = track.artist
         durationLabel.text = formatTime(AudioManager.shared.audioPlayer?.duration ?? 0)
         progressSlider.value = 0
+
+        // Устанавливаем изображение кнопки в состояние "Pause"
+        playPauseButton.setImage(UIImage(systemName: "pause"), for: .normal)
     }
+
+
 
     func playNextTrack() {
         if tracks.isEmpty {
@@ -58,7 +63,6 @@ class PlayerViewController: UIViewController {
         AudioManager.shared.playTrack(withFileName: track?.fileName ?? "", tracks: tracks)
     }
 
-
     func playPreviousTrack() {
         if tracks.isEmpty {
             return
@@ -69,6 +73,7 @@ class PlayerViewController: UIViewController {
         setupUI()
         AudioManager.shared.playTrack(withFileName: track?.fileName ?? "", tracks: tracks)
     }
+
 
     
 
@@ -113,13 +118,22 @@ class PlayerViewController: UIViewController {
         if let player = AudioManager.shared.audioPlayer {
             player.currentTime = TimeInterval(sender.value) * player.duration
             currentTimeLabel.text = formatTime(player.currentTime)
+            updateUI()
         }
+    
+
     }
 
     func play() {
         if let player = AudioManager.shared.audioPlayer {
             player.play()
-            playPauseButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
+            UIView.transition(with: playPauseButton,
+                              duration: 0.3,
+                              options: .transitionCrossDissolve,
+                              animations: {
+                                  self.playPauseButton.setImage(UIImage(systemName: "pause"), for: .normal)
+                              },
+                              completion: nil)
             delegate?.playbackStateChanged(isPlaying: true, currentIndex: currentIndex)
         }
     }
@@ -127,7 +141,13 @@ class PlayerViewController: UIViewController {
     func pause() {
         if let player = AudioManager.shared.audioPlayer {
             player.pause()
-            playPauseButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+            UIView.transition(with: playPauseButton,
+                              duration: 0.3,
+                              options: .transitionCrossDissolve,
+                              animations: {
+                                  self.playPauseButton.setImage(UIImage(systemName: "play"), for: .normal)
+                              },
+                              completion: nil)
             delegate?.playbackStateChanged(isPlaying: false, currentIndex: currentIndex)
         }
     }
@@ -144,8 +164,14 @@ class PlayerViewController: UIViewController {
         }
 
         currentTimeLabel.text = formatTime(player.currentTime)
-        progressSlider.value = Float(player.currentTime / player.duration)
+        let newProgress = Float(player.currentTime / player.duration)
+        UIView.animate(withDuration: 0.3) {
+            self.progressSlider.setValue(newProgress, animated: true)
+            self.progressSlider.setNeedsDisplay()
+        }
 
         delegate?.playbackStateChanged(isPlaying: player.isPlaying, currentIndex: currentIndex)
     }
+
+
 }
