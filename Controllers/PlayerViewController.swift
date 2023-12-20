@@ -9,9 +9,19 @@ class PlayerViewController: UIViewController {
     @IBOutlet weak var durationLabel: UILabel!
     @IBOutlet weak var progressSlider: UISlider!
     @IBOutlet weak var playPauseButton: UIButton!
+ 
+    @IBOutlet weak var prevButton: UIButton!
+    @IBOutlet weak var nextButton: UIButton!
+    
+    
+
+
+    @IBOutlet weak var closeButton: UIButton!
 
     var audioPlayer: AVAudioPlayer?
     var track: Track?
+    var currentIndex: Int = 0
+    var tracks: [Track] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -38,34 +48,83 @@ class PlayerViewController: UIViewController {
         }
 
         do {
+            if let existingPlayer = audioPlayer {
+                existingPlayer.stop()
+            }
+
             audioPlayer = try AVAudioPlayer(contentsOf: url)
             audioPlayer?.delegate = self
             audioPlayer?.prepareToPlay()
-        } catch let error {
+            play()
+        } catch {
             print("Error loading audio file: \(error.localizedDescription)")
         }
     }
 
+    func play() {
+        audioPlayer?.play()
+        playPauseButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
+        updateUI()
+    }
+
+    func pause() {
+        audioPlayer?.pause()
+        playPauseButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+        updateUI()
+    }
+
+    func playNextTrack() {
+        if tracks.isEmpty {
+            return
+        }
+
+        currentIndex = (currentIndex + 1) % tracks.count
+        track = tracks[currentIndex]
+        setupUI()
+        setupAudioPlayer()
+    }
+
+    func playPreviousTrack() {
+        if tracks.isEmpty {
+            return
+        }
+
+        currentIndex = (currentIndex - 1 + tracks.count) % tracks.count
+        track = tracks[currentIndex]
+        setupUI()
+        setupAudioPlayer()
+    }
+
     // MARK: - IBActions
 
-    @IBAction func playPauseButtonTapped(_ sender: Any) {
-    DispatchQueue.main.async { [weak self] in
-           guard let self = self else { return }
+    @IBAction func playPauseButtonTapped(_ sender: UIButton) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
 
-           if let player = self.audioPlayer {
-               if player.isPlaying {
-                   player.pause()
-                   self.playPauseButton.setTitle("Play", for: .normal)
-                   print("Paused")
-               } else {
-                   player.play()
-                   self.playPauseButton.setTitle("Pause", for: .normal)
-                   print("Playing")
-               }
-           }
-       }
-   }
+            if let player = self.audioPlayer {
+                if player.isPlaying {
+                    self.pause()
+                    print("Paused")
+                } else {
+                    self.play()
+                    print("Playing")
+                }
+            }
+        }
+    }
 
+    @IBAction func nextButtonTapped(_ sender: UIButton) {
+        playNextTrack()
+    }
+
+    @IBAction func prevButtonTapped(_ sender: UIButton) {
+        playPreviousTrack()
+    }
+
+    @IBAction func closeButtonTapped(_ sender: UIButton) {
+        audioPlayer?.stop()
+        dismiss(animated: true, completion: nil)
+    }
 
     @IBAction func progressSliderValueChanged(_ sender: UISlider) {
         if let player = audioPlayer {
@@ -79,7 +138,7 @@ class PlayerViewController: UIViewController {
 
 extension PlayerViewController: AVAudioPlayerDelegate {
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        playPauseButton.setTitle("Play", for: .normal)
+        playNextTrack()
     }
 
     func audioPlayerUpdateTime(_ player: AVAudioPlayer) {
@@ -95,19 +154,14 @@ extension PlayerViewController {
         let seconds = Int(time) % 60
         return String(format: "%02d:%02d", minutes, seconds)
     }
-    
+
     func updateUI() {
         guard let player = audioPlayer else {
             return
         }
-        
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            self.currentTimeLabel.text = self.formatTime(player.currentTime)
-            self.progressSlider.value = Float(player.currentTime)
-            self.durationLabel.text = self.formatTime(player.duration)
-            print("UI Updated")
-        }
+
+        currentTimeLabel.text = formatTime(player.currentTime)
+        progressSlider.value = Float(player.currentTime)
+        durationLabel.text = formatTime(player.duration)
     }
 }

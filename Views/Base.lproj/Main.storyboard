@@ -66,6 +66,9 @@
                                         <rect key="frame" x="0.0" y="0.0" width="56" height="34.333333333333336"/>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="plain" image="backward" catalog="system"/>
+                                        <connections>
+                                            <action selector="prevButtonTapped:" destination="sHc-HO-GBy" eventType="touchUpInside" id="mks-ig-Lfv"/>
+                                        </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Up2-xX-KME">
                                         <rect key="frame" x="64" y="0.0" width="43.333333333333343" height="34.333333333333336"/>
@@ -79,6 +82,9 @@
                                         <rect key="frame" x="115.33333333333334" y="0.0" width="56" height="34.333333333333336"/>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="plain" image="forward" catalog="system"/>
+                                        <connections>
+                                            <action selector="nextButtonTapped:" destination="sHc-HO-GBy" eventType="touchUpInside" id="2y3-kM-G4A"/>
+                                        </connections>
                                     </button>
                                 </subviews>
                             </stackView>
@@ -102,6 +108,14 @@
                             <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="8WP-AF-cS5">
                                 <rect key="frame" x="14" y="583.33333333333337" width="365" height="31"/>
                             </slider>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Rmz-1j-aX7">
+                                <rect key="frame" x="16" y="20.000000000000004" width="89.333333333333343" height="34.333333333333343"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" image="xmark" catalog="system" title="Close"/>
+                                <connections>
+                                    <action selector="closeButtonTapped:" destination="sHc-HO-GBy" eventType="touchUpInside" id="TUv-L4-gQ4"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="mIU-Ij-0QL"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -117,16 +131,21 @@
                             <constraint firstItem="mIU-Ij-0QL" firstAttribute="trailing" secondItem="bFI-l4-uDv" secondAttribute="trailing" constant="22" id="ZcD-Fc-VpW"/>
                             <constraint firstItem="8WP-AF-cS5" firstAttribute="leading" secondItem="x36-5O-7yt" secondAttribute="leading" id="aRe-aT-Rpn"/>
                             <constraint firstItem="8WP-AF-cS5" firstAttribute="centerX" secondItem="7Om-W0-0Iq" secondAttribute="centerX" id="etf-Cg-R7v"/>
+                            <constraint firstItem="Rmz-1j-aX7" firstAttribute="leading" secondItem="mIU-Ij-0QL" secondAttribute="leading" constant="16" id="grZ-aS-st9"/>
                             <constraint firstItem="bFI-l4-uDv" firstAttribute="top" secondItem="mIU-Ij-0QL" secondAttribute="top" constant="556" id="hgb-54-auo"/>
                             <constraint firstItem="7Om-W0-0Iq" firstAttribute="top" secondItem="8WP-AF-cS5" secondAttribute="bottom" constant="7.6666666666666288" id="kfL-XP-bFf"/>
+                            <constraint firstItem="Rmz-1j-aX7" firstAttribute="top" secondItem="mIU-Ij-0QL" secondAttribute="top" constant="20" id="lcb-et-9Tt"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="0Sy-rb-Gwr"/>
                     <connections>
                         <outlet property="artistLabel" destination="5o1-wg-bkU" id="kds-2U-qQZ"/>
+                        <outlet property="closeButton" destination="Rmz-1j-aX7" id="rjr-9Y-ROA"/>
                         <outlet property="currentTimeLabel" destination="x36-5O-7yt" id="SRQ-AA-Ktl"/>
                         <outlet property="durationLabel" destination="bFI-l4-uDv" id="EJZ-uT-txI"/>
+                        <outlet property="nextButton" destination="vpg-fZ-dSg" id="lDm-na-TDY"/>
                         <outlet property="playPauseButton" destination="Up2-xX-KME" id="ldf-9b-Fk5"/>
+                        <outlet property="prevButton" destination="iKw-J4-y2o" id="i5u-xq-Aza"/>
                         <outlet property="progressSlider" destination="8WP-AF-cS5" id="pFa-XX-CU5"/>
                         <outlet property="trackTitleLabel" destination="HVA-Fh-u6q" id="dLf-eG-AUd"/>
                     </connections>
@@ -140,6 +159,7 @@
         <image name="backward" catalog="system" width="128" height="77"/>
         <image name="forward" catalog="system" width="128" height="77"/>
         <image name="play" catalog="system" width="117" height="128"/>
+        <image name="xmark" catalog="system" width="128" height="113"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
