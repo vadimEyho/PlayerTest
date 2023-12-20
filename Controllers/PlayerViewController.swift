@@ -55,8 +55,9 @@ class PlayerViewController: UIViewController {
         currentIndex = (currentIndex + 1) % tracks.count
         track = tracks[currentIndex]
         setupUI()
-        play()
+        AudioManager.shared.playTrack(withFileName: track?.fileName ?? "", tracks: tracks)
     }
+
 
     func playPreviousTrack() {
         if tracks.isEmpty {
@@ -66,8 +67,10 @@ class PlayerViewController: UIViewController {
         currentIndex = (currentIndex - 1 + tracks.count) % tracks.count
         track = tracks[currentIndex]
         setupUI()
-        play()
+        AudioManager.shared.playTrack(withFileName: track?.fileName ?? "", tracks: tracks)
     }
+
+    
 
     func startUpdateTimer() {
         updateTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateTimerFired), userInfo: nil, repeats: true)

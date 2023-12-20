@@ -5,6 +5,7 @@ class AudioManager: NSObject {
 
     var audioPlayer: AVAudioPlayer?
     var currentTrack: Track?
+    var tracks: [Track] = []
 
     private override init() {}
 
@@ -26,6 +27,7 @@ class AudioManager: NSObject {
                 audioPlayer?.prepareToPlay()
                 audioPlayer?.play()
                 currentTrack = tracks.first { $0.fileName == fileName }
+                self.tracks = tracks
             } catch {
                 print("Error loading audio file: \(error.localizedDescription)")
             }
@@ -38,6 +40,37 @@ class AudioManager: NSObject {
         audioPlayer?.stop()
         audioPlayer = nil
         currentTrack = nil
+    }
+
+    func playNextTrack() {
+        guard !tracks.isEmpty else {
+            return
+        }
+
+        let newIndex = (currentIndex + 1) % tracks.count
+        playTrack(atIndex: newIndex)
+    }
+
+    func playPreviousTrack() {
+        guard !tracks.isEmpty else {
+            return
+        }
+
+        let newIndex = (currentIndex - 1 + tracks.count) % tracks.count
+        playTrack(atIndex: newIndex)
+    }
+
+    private var currentIndex: Int {
+        guard let currentTrack = currentTrack else {
+            return 0
+        }
+
+        return tracks.firstIndex(where: { $0 == currentTrack }) ?? 0
+    }
+
+    private func playTrack(atIndex index: Int) {
+        let selectedTrack = tracks[index]
+        playTrack(withFileName: selectedTrack.fileName, tracks: tracks)
     }
 }
 

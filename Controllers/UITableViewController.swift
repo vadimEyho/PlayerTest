@@ -42,7 +42,7 @@ class TrackListViewController: UITableViewController, PlayerViewControllerDelega
         if let playerVC = storyboard?.instantiateViewController(withIdentifier: "PlayerViewController") as? PlayerViewController {
             playerVC.track = selectedTrack
             playerVC.tracks = tracks
-            playerVC.currentIndex = tracks.firstIndex(of: selectedTrack) ?? 0
+            playerVC.currentIndex = indexPath.row
             playerVC.delegate = self
 
             if let currentTrack = AudioManager.shared.currentTrack, currentTrack == selectedTrack {
@@ -56,6 +56,7 @@ class TrackListViewController: UITableViewController, PlayerViewControllerDelega
             }
         }
     }
+
 
     // MARK: - PlayerViewControllerDelegate
 
