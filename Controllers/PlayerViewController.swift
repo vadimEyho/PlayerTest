@@ -1,6 +1,10 @@
 import UIKit
 import AVFoundation
 
+protocol PlayerViewControllerDelegate: AnyObject {
+    func playbackStateChanged(isPlaying: Bool, currentIndex: Int)
+}
+
 class PlayerViewController: UIViewController {
 
     @IBOutlet weak var trackTitleLabel: UILabel!
@@ -17,13 +21,22 @@ class PlayerViewController: UIViewController {
     var track: Track?
     var currentIndex: Int = 0
     var tracks: [Track] = []
+    var selectedTrack: Track?
     var updateTimer: Timer?
+
+    weak var delegate: PlayerViewControllerDelegate?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         setupAudioPlayer()
         startUpdateTimer()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        // Остановка таймера обновления UI
+        stopUpdateTimer()
     }
 
     func setupUI() {
@@ -37,20 +50,16 @@ class PlayerViewController: UIViewController {
         progressSlider.value = 0
 
         progressSlider.minimumValue = 0
-            progressSlider.maximumValue = 1
-            progressSlider.setThumbImage(UIImage(), for: .normal)
-            progressSlider.minimumTrackTintColor = UIColor.systemBlue
-            progressSlider.maximumTrackTintColor = UIColor.lightGray
-
-        
+        progressSlider.maximumValue = 1
+        progressSlider.setThumbImage(UIImage(), for: .normal)
+        progressSlider.minimumTrackTintColor = UIColor.systemBlue
+        progressSlider.maximumTrackTintColor = UIColor.lightGray
     }
 
     func setupAudioPlayer() {
         guard let track = track else {
             return
         }
-
-        currentIndex = tracks.firstIndex(where: { $0.fileName == track.fileName }) ?? 0
 
         if let existingPlayer = audioPlayer {
             existingPlayer.stop()
@@ -70,21 +79,21 @@ class PlayerViewController: UIViewController {
         }
     }
 
-
     func play() {
-        setupAudioPlayer()
         audioPlayer?.play()
         playPauseButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
         updateUI()
+        // Уведомляем делегата о смене состояния воспроизведения
+        delegate?.playbackStateChanged(isPlaying: true, currentIndex: currentIndex)
     }
 
     func pause() {
-        setupAudioPlayer()
         audioPlayer?.pause()
         playPauseButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
         updateUI()
+        // Уведомляем делегата о смене состояния воспроизведения
+        delegate?.playbackStateChanged(isPlaying: false, currentIndex: currentIndex)
     }
-
 
     func playNextTrack() {
         if tracks.isEmpty {
@@ -110,7 +119,6 @@ class PlayerViewController: UIViewController {
         play()
     }
 
-
     func startUpdateTimer() {
         updateTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateTimerFired), userInfo: nil, repeats: true)
     }
@@ -125,17 +133,11 @@ class PlayerViewController: UIViewController {
     }
 
     @IBAction func playPauseButtonTapped(_ sender: UIButton) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-
-            if let player = self.audioPlayer {
-                if player.isPlaying {
-                    self.pause()
-                    print("Paused")
-                } else {
-                    self.play()
-                    print("Playing")
-                }
+        if let player = audioPlayer {
+            if player.isPlaying {
+                pause()
+            } else {
+                play()
             }
         }
     }
@@ -149,6 +151,7 @@ class PlayerViewController: UIViewController {
     }
 
     @IBAction func closeButtonTapped(_ sender: UIButton) {
+        // Остановка таймера и аудиоплеера при закрытии экрана
         stopUpdateTimer()
         audioPlayer?.stop()
         dismiss(animated: true, completion: nil)
@@ -156,7 +159,7 @@ class PlayerViewController: UIViewController {
 
     @IBAction func progressSliderValueChanged(_ sender: UISlider) {
         if let player = audioPlayer {
-            player.currentTime = TimeInterval(sender.value)
+            player.currentTime = TimeInterval(sender.value) * player.duration
             currentTimeLabel.text = formatTime(player.currentTime)
         }
     }
@@ -185,15 +188,7 @@ extension PlayerViewController {
         }
 
         currentTimeLabel.text = formatTime(player.currentTime)
-        progressSlider.value = Float(player.currentTime)
+        progressSlider.value = Float(player.currentTime / player.duration)
         durationLabel.text = formatTime(player.duration)
-        
-        progressSlider.value = Float(player.currentTime)
-
-        durationLabel.text = formatTime(player.duration)
-        
-        let progress = player.currentTime / player.duration
-                progressSlider.setValue(Float(progress), animated: false)
-
     }
 }

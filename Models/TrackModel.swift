@@ -7,8 +7,8 @@
 
 import Foundation
 
-struct Track {
-    var title: String
-    var artist: String
-    var fileName: String
+struct Track: Equatable {
+    let title: String
+    let artist: String
+    let fileName: String
 }
