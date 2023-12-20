@@ -1,23 +1,31 @@
-//
-//  AudioManager.swift
-//  PlayerTest
-//
-//  Created by Вадим Эйхольс on 20.12.2023.
-//
-
 import AVFoundation
 
-class AudioManager {
+class AudioManager: NSObject {
     static let shared = AudioManager()
 
     var audioPlayer: AVAudioPlayer?
+    var currentTrack: Track?
 
-    func playAudio(fileName: String) {
+    private override init() {}
+
+    func playTrack(withFileName fileName: String, tracks: [Track]) {
+        if let currentTrack = currentTrack, currentTrack.fileName == fileName, let player = audioPlayer {
+            // Возвращение на тот же трек, проверяем, играет ли он, и продолжаем воспроизведение
+            if !player.isPlaying {
+                player.play()
+            }
+            return
+        }
+
+        stop()
+
         if let url = Bundle.main.url(forResource: fileName, withExtension: "mp3") {
             do {
                 audioPlayer = try AVAudioPlayer(contentsOf: url)
+                audioPlayer?.delegate = self
                 audioPlayer?.prepareToPlay()
                 audioPlayer?.play()
+                currentTrack = tracks.first { $0.fileName == fileName }
             } catch {
                 print("Error loading audio file: \(error.localizedDescription)")
             }
@@ -26,7 +34,15 @@ class AudioManager {
         }
     }
 
-    func stopAudio() {
+    func stop() {
         audioPlayer?.stop()
+        audioPlayer = nil
+        currentTrack = nil
+    }
+}
+
+extension AudioManager: AVAudioPlayerDelegate {
+    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        stop()
     }
 }

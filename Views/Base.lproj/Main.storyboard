@@ -11,7 +11,7 @@
         <!--Track List View Controller-->
         <scene sceneID="paf-Ij-IxV">
             <objects>
-                <tableViewController id="6cQ-VW-PeO" customClass="TrackListViewController" customModule="PlayerTest" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController storyboardIdentifier="TrackListViewController" id="6cQ-VW-PeO" customClass="TrackListViewController" customModule="PlayerTest" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" id="Stb-ee-XPQ">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -42,7 +42,7 @@
         <!--Player View Controller-->
         <scene sceneID="GJ7-ha-QqZ">
             <objects>
-                <viewController id="sHc-HO-GBy" customClass="PlayerViewController" customModule="PlayerTest" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="PlayerViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="sHc-HO-GBy" customClass="PlayerViewController" customModule="PlayerTest" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="y45-47-rlq">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="842"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -109,7 +109,7 @@
                                 <rect key="frame" x="14" y="583.33333333333337" width="365" height="31"/>
                             </slider>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Rmz-1j-aX7">
-                                <rect key="frame" x="16" y="20.000000000000004" width="89.333333333333343" height="34.333333333333343"/>
+                                <rect key="frame" x="16" y="20.000000000000004" width="89.333333333333329" height="34.333333333333343"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" image="xmark" catalog="system" title="Close"/>
                                 <connections>

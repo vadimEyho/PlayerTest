@@ -1,15 +1,14 @@
 import UIKit
 
-class TrackListViewController: UITableViewController {
-    
+class TrackListViewController: UITableViewController, PlayerViewControllerDelegate {
+
     var tracks: [Track] = []
-    var selectedTrack: Track?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTracks()
     }
-    
+
     func setupTracks() {
         // Загрузите ваши треки
         tracks = [
@@ -19,13 +18,15 @@ class TrackListViewController: UITableViewController {
         ]
     }
 
+    // MARK: - Table view data source
+
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return tracks.count
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "TrackCell")
-        
+
         let track = tracks[indexPath.row]
         cell.textLabel?.text = track.title
         cell.detailTextLabel?.text = track.artist
@@ -33,24 +34,32 @@ class TrackListViewController: UITableViewController {
         return cell
     }
 
+    // MARK: - Table view delegate
+
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let selectedTrack = tracks[indexPath.row]
-        AudioManager.shared.playAudio(fileName: selectedTrack.fileName)
-        self.selectedTrack = selectedTrack
-        performSegue(withIdentifier: "PlayerSegue", sender: selectedTrack)
-    }
-}
 
-// MARK: - PlayerViewControllerDelegate
+        if let playerVC = storyboard?.instantiateViewController(withIdentifier: "PlayerViewController") as? PlayerViewController {
+            playerVC.track = selectedTrack
+            playerVC.tracks = tracks
+            playerVC.currentIndex = tracks.firstIndex(of: selectedTrack) ?? 0
+            playerVC.delegate = self
 
-extension TrackListViewController: PlayerViewControllerDelegate {
-    func playbackStateChanged(isPlaying: Bool, currentIndex: Int) {
-        if let indexPath = tableView.indexPathForSelectedRow {
-            let selectedTrack = tracks[indexPath.row]
-            if let cell = tableView.cellForRow(at: indexPath) {
-                cell.textLabel?.text = selectedTrack.title
-                cell.detailTextLabel?.text = selectedTrack.artist
+            if let currentTrack = AudioManager.shared.currentTrack, currentTrack == selectedTrack {
+                // Возвращение на тот же трек, продолжаем воспроизведение
+                present(playerVC, animated: true, completion: nil)
+            } else {
+                // Выбор нового трека, останавливаем предыдущий и воспроизводим новый
+                AudioManager.shared.stop()
+                AudioManager.shared.playTrack(withFileName: selectedTrack.fileName, tracks: tracks)
+                present(playerVC, animated: true, completion: nil)
             }
         }
+    }
+
+    // MARK: - PlayerViewControllerDelegate
+
+    func playbackStateChanged(isPlaying: Bool, currentIndex: Int) {
+        // Обработка изменений состояния воспроизведения, если необходимо
     }
 }

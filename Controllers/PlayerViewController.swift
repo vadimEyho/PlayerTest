@@ -5,7 +5,7 @@ protocol PlayerViewControllerDelegate: AnyObject {
     func playbackStateChanged(isPlaying: Bool, currentIndex: Int)
 }
 
-class PlayerViewController: UIViewController  {
+class PlayerViewController: UIViewController {
 
     @IBOutlet weak var trackTitleLabel: UILabel!
     @IBOutlet weak var artistLabel: UILabel!
@@ -17,11 +17,9 @@ class PlayerViewController: UIViewController  {
     @IBOutlet weak var prevButton: UIButton!
     @IBOutlet weak var closeButton: UIButton!
 
-    var audioPlayer: AVAudioPlayer?
     var track: Track?
     var currentIndex: Int = 0
     var tracks: [Track] = []
-    var selectedTrack: Track?
 
     var updateTimer: Timer?
 
@@ -30,7 +28,6 @@ class PlayerViewController: UIViewController  {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        setupAudioPlayer()
         startUpdateTimer()
     }
 
@@ -46,58 +43,9 @@ class PlayerViewController: UIViewController  {
 
         trackTitleLabel.text = track.title
         artistLabel.text = track.artist
-        durationLabel.text = "00:00"
+        durationLabel.text = formatTime(AudioManager.shared.audioPlayer?.duration ?? 0)
         progressSlider.value = 0
-
-        progressSlider.minimumValue = 0
-        progressSlider.maximumValue = 1
-        progressSlider.setThumbImage(UIImage(), for: .normal)
-        progressSlider.minimumTrackTintColor = UIColor.systemBlue
-        progressSlider.maximumTrackTintColor = UIColor.lightGray
     }
-
-    func setupAudioPlayer() {
-        guard let track = track, audioPlayer == nil else {
-            return
-        }
-
-        if let url = Bundle.main.url(forResource: track.fileName, withExtension: "mp3") {
-            do {
-                audioPlayer = try AVAudioPlayer(contentsOf: url)
-                audioPlayer?.delegate = self
-                audioPlayer?.prepareToPlay()
-                play()
-            } catch {
-                print("Error loading audio file: \(error.localizedDescription)")
-            }
-        } else {
-            print("Audio file not found.")
-        }
-    }
-    
-    func play() {
-            guard let player = audioPlayer else {
-                return
-            }
-
-            if !player.isPlaying {
-                player.play()
-                playPauseButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
-                startUpdateTimer()
-            }
-        }
-
-        func pause() {
-            guard let player = audioPlayer else {
-                return
-            }
-
-            if player.isPlaying {
-                player.pause()
-                playPauseButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
-                stopUpdateTimer()
-            }
-        }
 
     func playNextTrack() {
         if tracks.isEmpty {
@@ -107,7 +55,6 @@ class PlayerViewController: UIViewController  {
         currentIndex = (currentIndex + 1) % tracks.count
         track = tracks[currentIndex]
         setupUI()
-        setupAudioPlayer()
         play()
     }
 
@@ -119,7 +66,6 @@ class PlayerViewController: UIViewController  {
         currentIndex = (currentIndex - 1 + tracks.count) % tracks.count
         track = tracks[currentIndex]
         setupUI()
-        setupAudioPlayer()
         play()
     }
 
@@ -137,14 +83,10 @@ class PlayerViewController: UIViewController  {
     }
 
     @IBAction func playPauseButtonTapped(_ sender: UIButton) {
-        if let player = audioPlayer {
-            if player.isPlaying {
-                pause()
-                print("Paused")
-            } else {
-                play()
-                print("Playing")
-            }
+        if AudioManager.shared.audioPlayer?.isPlaying == true {
+            pause()
+        } else {
+            play()
         }
     }
 
@@ -157,45 +99,50 @@ class PlayerViewController: UIViewController  {
     }
 
     @IBAction func closeButtonTapped(_ sender: UIButton) {
-            AudioManager.shared.stopAudio()
-            delegate?.playbackStateChanged(isPlaying: false, currentIndex: currentIndex)
-            dismiss(animated: true, completion: nil)
+        stopUpdateTimer()
+        dismiss(animated: true) {
+            AudioManager.shared.stop()
+            self.delegate?.playbackStateChanged(isPlaying: false, currentIndex: self.currentIndex)
         }
+    }
+
     @IBAction func progressSliderValueChanged(_ sender: UISlider) {
-        if let player = audioPlayer {
+        if let player = AudioManager.shared.audioPlayer {
             player.currentTime = TimeInterval(sender.value) * player.duration
             currentTimeLabel.text = formatTime(player.currentTime)
         }
     }
-}
 
-// MARK: - AVAudioPlayerDelegate
-
-extension PlayerViewController: AVAudioPlayerDelegate {
-    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        playNextTrack()
+    func play() {
+        if let player = AudioManager.shared.audioPlayer {
+            player.play()
+            playPauseButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
+            delegate?.playbackStateChanged(isPlaying: true, currentIndex: currentIndex)
+        }
     }
-}
 
-// MARK: - Helper methods
+    func pause() {
+        if let player = AudioManager.shared.audioPlayer {
+            player.pause()
+            playPauseButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+            delegate?.playbackStateChanged(isPlaying: false, currentIndex: currentIndex)
+        }
+    }
 
-extension PlayerViewController {
     func formatTime(_ time: TimeInterval) -> String {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
         return String(format: "%02d:%02d", minutes, seconds)
     }
-    
+
     func updateUI() {
-        guard let player = audioPlayer else {
+        guard let player = AudioManager.shared.audioPlayer else {
             return
         }
-        
+
         currentTimeLabel.text = formatTime(player.currentTime)
         progressSlider.value = Float(player.currentTime / player.duration)
-        durationLabel.text = formatTime(player.duration)
-        
-        // Обновляем делегата, если он установлен
+
         delegate?.playbackStateChanged(isPlaying: player.isPlaying, currentIndex: currentIndex)
     }
 }
