@@ -46,8 +46,15 @@ class PlayerViewController: UIViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        stopUpdateTimer()
+
+        // Проверяем, откуда происходит переход
+        if isMovingFromParent {
+            stopUpdateTimer()
+            AudioManager.shared.stop()
+            delegate?.playbackStateChanged(isPlaying: false, currentIndex: currentIndex)
+        }
     }
+
 
     func setupUI() {
         guard let track = track else {
@@ -123,8 +130,10 @@ class PlayerViewController: UIViewController {
     @IBAction func closeButtonTapped(_ sender: UIButton) {
         stopUpdateTimer()
         dismiss(animated: true) {
-            AudioManager.shared.stop()
-            self.delegate?.playbackStateChanged(isPlaying: false, currentIndex: self.currentIndex)
+            if self.isBeingDismissed {
+                AudioManager.shared.stop()
+                self.delegate?.playbackStateChanged(isPlaying: false, currentIndex: self.currentIndex)
+            }
         }
     }
     
