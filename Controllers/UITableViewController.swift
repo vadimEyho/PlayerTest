@@ -27,22 +27,56 @@ class TrackListViewController: UITableViewController, PlayerViewControllerDelega
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell(style: .default, reuseIdentifier: "TrackCell")
+        let cell = tableView.dequeueReusableCell(withIdentifier: "TrackCell", for: indexPath)
 
         let track = tracks[indexPath.row]
         let artistTitle = "\(track.artist) - \(track.title)"
         let durationText = formatTime(track.totalDuration)
 
-        cell.textLabel?.text = "\(artistTitle) \(durationText)"
-        cell.textLabel?.font = UIFont.systemFont(ofSize: 10)
+        // Создаем UILabel для отображения артиста и названия трека
+        let artistTitleLabel = UILabel()
+        artistTitleLabel.text = artistTitle
+        artistTitleLabel.font = UIFont.systemFont(ofSize: 12)  // Размер шрифта по вашему желанию
+        artistTitleLabel.textColor = .black  // Цвет текста
+        artistTitleLabel.numberOfLines = 0  // Разрешаем перенос текста на несколько строк
+        artistTitleLabel.translatesAutoresizingMaskIntoConstraints = false  // Включаем Auto Layout
+
+        // Создаем UILabel для отображения продолжительности трека
+        let durationLabel = UILabel()
+        durationLabel.text = durationText
+        durationLabel.font = UIFont.systemFont(ofSize: 10)  // Размер шрифта по вашему желанию
+        durationLabel.textColor = .gray  // Цвет текста
+        durationLabel.translatesAutoresizingMaskIntoConstraints = false  // Включаем Auto Layout
+
+        // Создаем стековое представление для размещения элементов
+        let stackView = UIStackView(arrangedSubviews: [artistTitleLabel, UIView(), durationLabel])
+        stackView.axis = .horizontal
+        stackView.distribution = .fill
+        stackView.alignment = .center  // Центрируем содержимое
+        stackView.spacing = 8  // Расстояние между элементами (можете настроить по вашему желанию)
+        stackView.translatesAutoresizingMaskIntoConstraints = false  // Включаем Auto Layout
+
+        // Добавляем stackView к contentView ячейки
+        cell.contentView.addSubview(stackView)
+
+        // Устанавливаем ограничения
+        NSLayoutConstraint.activate([
+            stackView.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 16),
+            stackView.trailingAnchor.constraint(equalTo: cell.contentView.trailingAnchor, constant: -16),
+            stackView.topAnchor.constraint(equalTo: cell.contentView.topAnchor),
+            stackView.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor)
+        ])
+
 
         return cell
     }
 
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        // Устанавливаем конкретное значение высоты ячейки
+        return 50  // Замените это значение на желаемую высоту
+    }
 
 
-
-    
     func formatTime(_ time: TimeInterval) -> String {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
