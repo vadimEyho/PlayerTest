@@ -29,8 +29,6 @@ class TrackListViewController: UITableViewController, PlayerViewControllerDelega
         }
     }
 
-
-
     // MARK: - Table view data source
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -78,7 +76,6 @@ class TrackListViewController: UITableViewController, PlayerViewControllerDelega
             stackView.bottomAnchor.constraint(equalTo: cell.contentView.bottomAnchor)
         ])
 
-
         return cell
     }
 
@@ -87,14 +84,11 @@ class TrackListViewController: UITableViewController, PlayerViewControllerDelega
         return 50  // Замените это значение на желаемую высоту
     }
 
-
     func formatTime(_ time: TimeInterval) -> String {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
         return String(format: "%02d:%02d", minutes, seconds)
     }
-
-
 
     // MARK: - Table view delegate
 
@@ -107,19 +101,21 @@ class TrackListViewController: UITableViewController, PlayerViewControllerDelega
             playerVC.currentIndex = indexPath.row
             playerVC.delegate = self
 
-            if let currentTrack = AudioManager.shared.currentTrack, currentTrack == selectedTrack {
-                // Возвращение на тот же трек, продолжаем воспроизведение
+            if let currentTrack = AudioManager.shared.currentTrack,
+                currentTrack.fileName == selectedTrack.fileName,
+                AudioManager.shared.audioPlayer?.isPlaying == true {
+                // Возвращение на тот же трек, который воспроизводится, просто открываем плеер
+                AudioManager.shared.delegate = playerVC as? AudioPlayerDelegate
                 present(playerVC, animated: true, completion: nil)
             } else {
-                // Выбор нового трека, останавливаем предыдущий и воспроизводим новый
+                // Выбор нового трека или остановленного трека, останавливаем предыдущий и воспроизводим новый
                 AudioManager.shared.stop()
+                AudioManager.shared.delegate = nil
                 AudioManager.shared.playTrack(withFileName: selectedTrack.fileName, tracks: tracks)
                 present(playerVC, animated: true, completion: nil)
             }
         }
     }
-
-
     // MARK: - PlayerViewControllerDelegate
 
     func playbackStateChanged(isPlaying: Bool, currentIndex: Int) {

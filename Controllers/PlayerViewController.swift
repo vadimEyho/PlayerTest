@@ -20,6 +20,8 @@ class PlayerViewController: UIViewController {
     var track: Track?
     var currentIndex: Int = 0
     var tracks: [Track] = []
+    var currentlyPlayingTrack: Track?
+
 
     var updateTimer: Timer?
     var isSliderBeingTouched = false
@@ -78,8 +80,12 @@ class PlayerViewController: UIViewController {
 
         currentIndex = (currentIndex + 1) % tracks.count
         track = tracks[currentIndex]
-        setupUI()
-        AudioManager.shared.playTrack(withFileName: track?.fileName ?? "", tracks: tracks)
+
+        // Проверяем, текущий проигрываемый трек
+        if track != currentlyPlayingTrack {
+            setupUI()
+            AudioManager.shared.playTrack(withFileName: track?.fileName ?? "", tracks: tracks)
+        }
     }
     
     func updateTrackInfo(track: Track) {
@@ -94,8 +100,12 @@ class PlayerViewController: UIViewController {
 
         currentIndex = (currentIndex - 1 + tracks.count) % tracks.count
         track = tracks[currentIndex]
-        setupUI()
-        AudioManager.shared.playTrack(withFileName: track?.fileName ?? "", tracks: tracks)
+
+        // Проверяем, текущий проигрываемый трек
+        if track != currentlyPlayingTrack {
+            setupUI()
+            AudioManager.shared.playTrack(withFileName: track?.fileName ?? "", tracks: tracks)
+        }
     }
 
     func startUpdateTimer() {
