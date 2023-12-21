@@ -1,13 +1,25 @@
 import AVFoundation
 
+protocol AudioPlayerDelegate: AnyObject {
+    func playbackStateChanged(isPlaying: Bool, currentIndex: Int)
+}
+
 class AudioManager: NSObject {
     static let shared = AudioManager()
 
     var audioPlayer: AVAudioPlayer?
     var currentTrack: Track?
     var tracks: [Track] = []
+    weak var delegate: AudioPlayerDelegate?
 
-    private override init() {}
+    private override init() {
+        super.init()
+        NotificationCenter.default.addObserver(self, selector: #selector(audioPlayerDidFinishPlaying(_:)), name: .AVPlayerItemDidPlayToEndTime, object: nil)
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
 
     func playTrack(withFileName fileName: String, tracks: [Track]) {
         if let currentTrack = currentTrack, currentTrack.fileName == fileName, let player = audioPlayer {
@@ -34,6 +46,9 @@ class AudioManager: NSObject {
                     currentTrack?.duration = audioPlayer?.duration ?? 0
                     // Установите общую продолжительность для текущего трека
                     currentTrack?.totalDuration = tracks.reduce(0) { $0 + $1.duration }
+
+                    // Уведомляем делегата о начале воспроизведения нового трека
+                    delegate?.playbackStateChanged(isPlaying: true, currentIndex: currentIndex)
                 }
             } catch {
                 print("Error loading audio file: \(error.localizedDescription)")
@@ -42,8 +57,6 @@ class AudioManager: NSObject {
             print("Audio file not found.")
         }
     }
-
-
 
     func stop() {
         audioPlayer?.stop()
@@ -81,10 +94,22 @@ class AudioManager: NSObject {
         let selectedTrack = tracks[index]
         playTrack(withFileName: selectedTrack.fileName, tracks: tracks)
     }
+
+    @objc private func audioPlayerDidFinishPlaying(_ notification: Notification) {
+        // Уведомляем делегата о завершении воспроизведения текущего трека
+        delegate?.playbackStateChanged(isPlaying: false, currentIndex: currentIndex)
+
+        // Переключаемся на следующий трек
+        playNextTrack()
+    }
 }
 
 extension AudioManager: AVAudioPlayerDelegate {
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        stop()
+        // Уведомляем делегата о завершении воспроизведения текущего трека
+        delegate?.playbackStateChanged(isPlaying: false, currentIndex: currentIndex)
+
+        // Переключаемся на следующий трек
+        playNextTrack()
     }
 }

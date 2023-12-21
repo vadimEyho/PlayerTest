@@ -107,6 +107,9 @@
                             </stackView>
                             <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="8WP-AF-cS5" customClass="CustomSlider" customModule="PlayerTest" customModuleProvider="target">
                                 <rect key="frame" x="14" y="583.33333333333337" width="365" height="31"/>
+                                <connections>
+                                    <action selector="progressSliderValueChanged:" destination="sHc-HO-GBy" eventType="valueChanged" id="sRY-WM-FwH"/>
+                                </connections>
                             </slider>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Rmz-1j-aX7">
                                 <rect key="frame" x="16" y="20.000000000000004" width="89.333333333333329" height="34.333333333333343"/>

@@ -22,6 +22,7 @@ class PlayerViewController: UIViewController {
     var tracks: [Track] = []
 
     var updateTimer: Timer?
+    var isSliderBeingTouched = false
 
     weak var delegate: PlayerViewControllerDelegate?
 
@@ -29,6 +30,10 @@ class PlayerViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         startUpdateTimer()
+
+        // Добавляем обработчик жестов для слайдера
+        let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
+        progressSlider.addGestureRecognizer(panGestureRecognizer)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -49,8 +54,6 @@ class PlayerViewController: UIViewController {
         // Устанавливаем изображение кнопки в состояние "Pause"
         playPauseButton.setImage(UIImage(systemName: "pause"), for: .normal)
     }
-
-
 
     func playNextTrack() {
         if tracks.isEmpty {
@@ -73,9 +76,6 @@ class PlayerViewController: UIViewController {
         setupUI()
         AudioManager.shared.playTrack(withFileName: track?.fileName ?? "", tracks: tracks)
     }
-
-
-    
 
     func startUpdateTimer() {
         updateTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateTimerFired), userInfo: nil, repeats: true)
@@ -113,15 +113,55 @@ class PlayerViewController: UIViewController {
             self.delegate?.playbackStateChanged(isPlaying: false, currentIndex: self.currentIndex)
         }
     }
-
+    
     @IBAction func progressSliderValueChanged(_ sender: UISlider) {
-        if let player = AudioManager.shared.audioPlayer {
-            player.currentTime = TimeInterval(sender.value) * player.duration
+        guard let player = AudioManager.shared.audioPlayer, !isSliderBeingTouched else {
+            return
+        }
+
+        let newTime = TimeInterval(sender.value) * player.duration
+        player.currentTime = newTime
+        currentTimeLabel.text = formatTime(newTime)
+        updateUI()
+
+        // Обновляем currentIndex
+        currentIndex = Int(sender.value * Float(tracks.count))
+        delegate?.playbackStateChanged(isPlaying: player.isPlaying, currentIndex: currentIndex)
+    }
+
+    @objc func handlePanGesture(_ gesture: UIPanGestureRecognizer) {
+        guard let player = AudioManager.shared.audioPlayer else {
+            return
+        }
+
+        switch gesture.state {
+        case .began:
+            isSliderBeingTouched = true
+        case .changed:
+            let translation = gesture.translation(in: progressSlider)
+            let percentage = Float(translation.x / progressSlider.bounds.width)
+            let newProgress = max(min(progressSlider.value + percentage, 1.0), 0.0)
+            progressSlider.setValue(newProgress, animated: false)
+            player.currentTime = TimeInterval(newProgress) * player.duration
             currentTimeLabel.text = formatTime(player.currentTime)
             updateUI()
-        }
-    
 
+            // Обновляем currentIndex
+            currentIndex = Int(newProgress * Float(tracks.count))
+            delegate?.playbackStateChanged(isPlaying: player.isPlaying, currentIndex: currentIndex)
+        case .ended, .cancelled, .failed:
+            isSliderBeingTouched = false
+        default:
+            break
+        }
+    }
+
+    // Добавляем метод для обновления слайдера в реальном времени
+    func updateSliderProgress() {
+        if let player = AudioManager.shared.audioPlayer {
+            let progress = Float(player.currentTime / player.duration)
+            progressSlider.setValue(progress, animated: true)
+        }
     }
 
     func play() {
@@ -165,13 +205,11 @@ class PlayerViewController: UIViewController {
 
         currentTimeLabel.text = formatTime(player.currentTime)
         let newProgress = Float(player.currentTime / player.duration)
-        UIView.animate(withDuration: 0.3) {
+        UIView.animate(withDuration: isSliderBeingTouched ? 0.0 : 0.3) {
             self.progressSlider.setValue(newProgress, animated: true)
             self.progressSlider.setNeedsDisplay()
         }
 
         delegate?.playbackStateChanged(isPlaying: player.isPlaying, currentIndex: currentIndex)
     }
-
-
 }
