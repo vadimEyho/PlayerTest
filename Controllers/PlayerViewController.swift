@@ -36,9 +36,12 @@ class PlayerViewController: UIViewController {
          progressSlider.addGestureRecognizer(panGestureRecognizer)
 
          // Подпишитесь на замыкание для обновления информации о треке
-         AudioManager.shared.updateTrackInfoClosure = { [weak self] track in
-             self?.updateTrackInfo(track: track)
-         }
+        AudioManager.shared.updateTrackInfoClosure = { [weak self] track in
+            self?.updateTrackInfo(track: track)
+            // Установите продолжительность в UI
+            self?.durationLabel.text = self?.formatTime(track.totalDuration)
+        }
+
      }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -53,12 +56,13 @@ class PlayerViewController: UIViewController {
 
         trackTitleLabel.text = track.title
         artistLabel.text = track.artist
-        durationLabel.text = formatTime(AudioManager.shared.audioPlayer?.duration ?? 0)
+        durationLabel.text = formatTime(track.totalDuration)  // Устанавливаем продолжительность для текущего трека
         progressSlider.value = 0
 
         // Устанавливаем изображение кнопки в состояние "Pause"
         playPauseButton.setImage(UIImage(systemName: "pause"), for: .normal)
     }
+
 
     func playNextTrack() {
         if tracks.isEmpty {

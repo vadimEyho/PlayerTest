@@ -1,4 +1,5 @@
 import UIKit
+import AVFoundation
 
 class TrackListViewController: UITableViewController, PlayerViewControllerDelegate {
 
@@ -12,10 +13,20 @@ class TrackListViewController: UITableViewController, PlayerViewControllerDelega
     func setupTracks() {
         // Загрузите ваши треки
         tracks = [
-            Track(title: "На заре", artist: "АИГЕЛ", fileName: "АИГЕЛ - Пыяла", duration: 0, totalDuration: 3*60 + 40),  // Установите продолжительность трека
-            Track(title: "На заре", artist: "Баста", fileName: "Баста - На заре", duration: 0, totalDuration: 3*60 + 40),
-            Track(title: "Прощание", artist: "Три дня дождя, MONA", fileName: "Три дня дождя, MONA - Прощание", duration: 0, totalDuration: 3*60 + 40)
+            Track(title: "На заре", artist: "АИГЕЛ", fileName: "АИГЕЛ - Пыяла"),
+            Track(title: "На заре", artist: "Баста", fileName: "Баста - На заре"),
+            Track(title: "Прощание", artist: "Три дня дождя, MONA", fileName: "Три дня дождя, MONA - Прощание")
         ]
+
+        // Установим продолжительность для каждого трека
+        for (index, var track) in tracks.enumerated() {
+            if let url = Bundle.main.url(forResource: track.fileName, withExtension: "mp3") {
+                let playerItem = AVPlayerItem(url: url)
+                track.duration = CMTimeGetSeconds(playerItem.asset.duration)
+                track.totalDuration = CMTimeGetSeconds(playerItem.asset.duration)
+                tracks[index] = track
+            }
+        }
     }
 
 
