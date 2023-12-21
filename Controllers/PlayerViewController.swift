@@ -27,14 +27,19 @@ class PlayerViewController: UIViewController {
     weak var delegate: PlayerViewControllerDelegate?
 
     override func viewDidLoad() {
-        super.viewDidLoad()
-        setupUI()
-        startUpdateTimer()
+         super.viewDidLoad()
+         setupUI()
+         startUpdateTimer()
 
-        // Добавляем обработчик жестов для слайдера
-        let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
-        progressSlider.addGestureRecognizer(panGestureRecognizer)
-    }
+         // Добавляем обработчик жестов для слайдера
+         let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
+         progressSlider.addGestureRecognizer(panGestureRecognizer)
+
+         // Подпишитесь на замыкание для обновления информации о треке
+         AudioManager.shared.updateTrackInfoClosure = { [weak self] track in
+             self?.updateTrackInfo(track: track)
+         }
+     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
@@ -65,6 +70,11 @@ class PlayerViewController: UIViewController {
         setupUI()
         AudioManager.shared.playTrack(withFileName: track?.fileName ?? "", tracks: tracks)
     }
+    
+    func updateTrackInfo(track: Track) {
+           trackTitleLabel.text = track.title
+           artistLabel.text = track.artist
+       }
 
     func playPreviousTrack() {
         if tracks.isEmpty {

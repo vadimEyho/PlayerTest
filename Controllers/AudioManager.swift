@@ -11,6 +11,23 @@ class AudioManager: NSObject {
     var currentTrack: Track?
     var tracks: [Track] = []
     weak var delegate: AudioPlayerDelegate?
+    
+    private var _currentIndex: Int = 0
+
+    var currentIndex: Int {
+        get {
+            return _currentIndex
+        }
+        set {
+            // Перед изменением currentIndex, уведомляем об изменении текущего трека
+            let selectedTrack = tracks[newValue]
+            updateTrackInfoClosure?(selectedTrack)
+            _currentIndex = newValue
+        }
+    }
+
+    // Добавьте замыкание для обновления информации о треке
+    var updateTrackInfoClosure: ((Track) -> Void)?
 
     private override init() {
         super.init()
@@ -49,6 +66,9 @@ class AudioManager: NSObject {
 
                     // Уведомляем делегата о начале воспроизведения нового трека
                     delegate?.playbackStateChanged(isPlaying: true, currentIndex: currentIndex)
+
+                    // Вызовите замыкание для обновления информации о треке
+                    updateTrackInfoClosure?(selectedTrack)
                 }
             } catch {
                 print("Error loading audio file: \(error.localizedDescription)")
@@ -69,9 +89,11 @@ class AudioManager: NSObject {
             return
         }
 
-        let newIndex = (currentIndex + 1) % tracks.count
-        playTrack(atIndex: newIndex)
+        currentIndex = (currentIndex + 1) % tracks.count
+        let selectedTrack = tracks[currentIndex]
+        playTrack(withFileName: selectedTrack.fileName, tracks: tracks)
     }
+
 
     func playPreviousTrack() {
         guard !tracks.isEmpty else {
@@ -82,13 +104,7 @@ class AudioManager: NSObject {
         playTrack(atIndex: newIndex)
     }
 
-    private var currentIndex: Int {
-        guard let currentTrack = currentTrack else {
-            return 0
-        }
 
-        return tracks.firstIndex(where: { $0 == currentTrack }) ?? 0
-    }
 
     private func playTrack(atIndex index: Int) {
         let selectedTrack = tracks[index]
@@ -101,6 +117,13 @@ class AudioManager: NSObject {
 
         // Переключаемся на следующий трек
         playNextTrack()
+        
+        // Убедимся, что метод playNextTrack установит новый текущий трек и запустит его воспроизведение
+        // без этого кода, он просто инкрементирует currentIndex и вызывает playTrack(atIndex:),
+        // который игнорирует воспроизведение, если трек такой же, как текущий
+        if let currentTrack = currentTrack {
+            playTrack(withFileName: currentTrack.fileName, tracks: tracks)
+        }
     }
 }
 
