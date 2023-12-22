@@ -13,7 +13,6 @@ struct Track: Equatable {
             artist = components[0]
             title = components[1]
         } else {
-            // В случае, если имя файла не содержит " - ", установим значения по умолчанию
             artist = "Unknown Artist"
             title = fileName
         }

@@ -22,7 +22,6 @@ class PlayerViewController: UIViewController {
     var tracks: [Track] = []
     var currentlyPlayingTrack: Track?
 
-
     var updateTimer: Timer?
     var isSliderBeingTouched = false
 
@@ -33,30 +32,24 @@ class PlayerViewController: UIViewController {
          setupUI()
          startUpdateTimer()
 
-         // Добавляем обработчик жестов для слайдера
          let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
          progressSlider.addGestureRecognizer(panGestureRecognizer)
 
-         // Подпишитесь на замыкание для обновления информации о треке
-        AudioManager.shared.updateTrackInfoClosure = { [weak self] track in
+         AudioManager.shared.updateTrackInfoClosure = { [weak self] track in
             self?.updateTrackInfo(track: track)
-            // Установите продолжительность в UI
             self?.durationLabel.text = self?.formatTime(track.totalDuration)
         }
-
      }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 
-        // Проверяем, откуда происходит переход
         if isMovingFromParent {
             stopUpdateTimer()
             AudioManager.shared.stop()
             delegate?.playbackStateChanged(isPlaying: false, currentIndex: currentIndex)
         }
     }
-
 
     func setupUI() {
         guard let track = track else {
@@ -65,13 +58,10 @@ class PlayerViewController: UIViewController {
 
         trackTitleLabel.text = track.title
         artistLabel.text = track.artist
-        durationLabel.text = formatTime(track.totalDuration)  // Устанавливаем продолжительность для текущего трека
+        durationLabel.text = formatTime(track.totalDuration)
         progressSlider.value = 0
-
-        // Устанавливаем изображение кнопки в состояние "Pause"
         playPauseButton.setImage(UIImage(systemName: "pause"), for: .normal)
     }
-
 
     func playNextTrack() {
         if tracks.isEmpty {
@@ -81,13 +71,12 @@ class PlayerViewController: UIViewController {
         currentIndex = (currentIndex + 1) % tracks.count
         track = tracks[currentIndex]
 
-        // Проверяем, текущий проигрываемый трек
         if track != currentlyPlayingTrack {
             setupUI()
             AudioManager.shared.playTrack(withFileName: track?.fileName ?? "", tracks: tracks)
         }
     }
-    
+
     func updateTrackInfo(track: Track) {
            trackTitleLabel.text = track.title
            artistLabel.text = track.artist
@@ -101,7 +90,6 @@ class PlayerViewController: UIViewController {
         currentIndex = (currentIndex - 1 + tracks.count) % tracks.count
         track = tracks[currentIndex]
 
-        // Проверяем, текущий проигрываемый трек
         if track != currentlyPlayingTrack {
             setupUI()
             AudioManager.shared.playTrack(withFileName: track?.fileName ?? "", tracks: tracks)
@@ -157,7 +145,6 @@ class PlayerViewController: UIViewController {
         currentTimeLabel.text = formatTime(newTime)
         updateUI()
 
-        // Обновляем currentIndex
         currentIndex = Int(sender.value * Float(tracks.count))
         delegate?.playbackStateChanged(isPlaying: player.isPlaying, currentIndex: currentIndex)
     }
@@ -179,7 +166,6 @@ class PlayerViewController: UIViewController {
             currentTimeLabel.text = formatTime(player.currentTime)
             updateUI()
 
-            // Обновляем currentIndex
             currentIndex = Int(newProgress * Float(tracks.count))
             delegate?.playbackStateChanged(isPlaying: player.isPlaying, currentIndex: currentIndex)
         case .ended, .cancelled, .failed:
@@ -189,7 +175,6 @@ class PlayerViewController: UIViewController {
         }
     }
 
-    // Добавляем метод для обновления слайдера в реальном времени
     func updateSliderProgress() {
         if let player = AudioManager.shared.audioPlayer {
             let progress = Float(player.currentTime / player.duration)

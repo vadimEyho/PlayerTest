@@ -6,23 +6,17 @@ class CustomSlider: UISlider {
 
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-
-        // Настраиваем внешний вид слайдера
         setupSliderAppearance()
     }
 
     private func setupSliderAppearance() {
-        // Убираем бегунок
         setThumbImage(UIImage(), for: .normal)
         setThumbImage(UIImage(), for: .highlighted)
-
-        // Устанавливаем цвет слайдера
-        minimumTrackTintColor = .systemBlue // Цвет заполняющейся полоски
-        maximumTrackTintColor = .lightGray // Цвет фона слайдера
+        minimumTrackTintColor = .systemBlue
+        maximumTrackTintColor = .lightGray
     }
 
     override func trackRect(forBounds bounds: CGRect) -> CGRect {
-        // Устанавливаем высоту заполняющейся полоски
         return CGRect(origin: bounds.origin, size: CGSize(width: bounds.width, height: 5.0))
     }
 

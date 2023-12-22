@@ -19,14 +19,12 @@ class AudioManager: NSObject {
             return _currentIndex
         }
         set {
-            // Перед изменением currentIndex, уведомляем об изменении текущего трека
             let selectedTrack = tracks[newValue]
             updateTrackInfoClosure?(selectedTrack)
             _currentIndex = newValue
         }
     }
 
-    // Добавьте замыкание для обновления информации о треке
     var updateTrackInfoClosure: ((Track) -> Void)?
 
     private override init() {
@@ -40,7 +38,6 @@ class AudioManager: NSObject {
 
     func playTrack(withFileName fileName: String, tracks: [Track]) {
         if let currentTrack = currentTrack, currentTrack.fileName == fileName, let player = audioPlayer {
-            // Возвращение на тот же трек, проверяем, играет ли он, и продолжаем воспроизведение
             if !player.isPlaying {
                 player.play()
             }
@@ -59,15 +56,10 @@ class AudioManager: NSObject {
                 if let selectedTrack = tracks.first(where: { $0.fileName == fileName }) {
                     currentTrack = selectedTrack
                     self.tracks = tracks
-                    // Установите продолжительность для текущего трека
                     currentTrack?.duration = audioPlayer?.duration ?? 0
-                    // Установите общую продолжительность для текущего трека
                     currentTrack?.totalDuration = tracks.reduce(0) { $0 + $1.duration }
 
-                    // Уведомляем делегата о начале воспроизведения нового трека
                     delegate?.playbackStateChanged(isPlaying: true, currentIndex: currentIndex)
-
-                    // Вызовите замыкание для обновления информации о треке
                     updateTrackInfoClosure?(selectedTrack)
                 }
             } catch {
@@ -94,7 +86,6 @@ class AudioManager: NSObject {
         playTrack(withFileName: selectedTrack.fileName, tracks: tracks)
     }
 
-
     func playPreviousTrack() {
         guard !tracks.isEmpty else {
             return
@@ -104,23 +95,15 @@ class AudioManager: NSObject {
         playTrack(atIndex: newIndex)
     }
 
-
-
     private func playTrack(atIndex index: Int) {
         let selectedTrack = tracks[index]
         playTrack(withFileName: selectedTrack.fileName, tracks: tracks)
     }
 
     @objc private func audioPlayerDidFinishPlaying(_ notification: Notification) {
-        // Уведомляем делегата о завершении воспроизведения текущего трека
         delegate?.playbackStateChanged(isPlaying: false, currentIndex: currentIndex)
-
-        // Переключаемся на следующий трек
         playNextTrack()
         
-        // Убедимся, что метод playNextTrack установит новый текущий трек и запустит его воспроизведение
-        // без этого кода, он просто инкрементирует currentIndex и вызывает playTrack(atIndex:),
-        // который игнорирует воспроизведение, если трек такой же, как текущий
         if let currentTrack = currentTrack {
             playTrack(withFileName: currentTrack.fileName, tracks: tracks)
         }
@@ -129,10 +112,7 @@ class AudioManager: NSObject {
 
 extension AudioManager: AVAudioPlayerDelegate {
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        // Уведомляем делегата о завершении воспроизведения текущего трека
         delegate?.playbackStateChanged(isPlaying: false, currentIndex: currentIndex)
-
-        // Переключаемся на следующий трек
         playNextTrack()
     }
 }
