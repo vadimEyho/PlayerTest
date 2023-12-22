@@ -7,27 +7,65 @@ class TrackListViewController: UITableViewController, PlayerViewControllerDelega
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupTracks()
-    }
-
-    func setupTracks() {
-        // Загрузите ваши треки
-        tracks = [
-            Track(title: "На заре", artist: "АИГЕЛ", fileName: "АИГЕЛ - Пыяла"),
-            Track(title: "На заре", artist: "Баста", fileName: "Баста - На заре"),
-            Track(title: "Прощание", artist: "Три дня дождя, MONA", fileName: "Три дня дождя, MONA - Прощание")
-        ]
-
-        // Установим продолжительность для каждого трека
-        for (index, var track) in tracks.enumerated() {
-            if let url = Bundle.main.url(forResource: track.fileName, withExtension: "mp3") {
-                let playerItem = AVPlayerItem(url: url)
-                track.duration = CMTimeGetSeconds(playerItem.asset.duration)
-                track.totalDuration = CMTimeGetSeconds(playerItem.asset.duration)
-                tracks[index] = track
+        Task {
+            do {
+                try await setupTracks()
+                // После загрузки треков обновите таблицу
+                self.tableView.reloadData()
+            } catch {
+                print("Error setting up tracks: \(error)")
             }
         }
     }
+
+    func setupTracks() async throws {
+        // Загрузите ваши треки
+        let fileNames = [
+            "АИГЕЛ - Пыяла",
+            "Баста - На заре",
+            "Три дня дождя, MONA - Прощание"
+        ]
+
+        // Установим продолжительность и другие метаданные для каждого трека
+        for fileName in fileNames {
+            if let url = Bundle.main.url(forResource: fileName, withExtension: "mp3") {
+                do {
+                    let asset = AVAsset(url: url)
+                    var track = Track(fileName: fileName)
+
+                    // Получаем метаданные трека
+                    let metadata = try await asset.loadMetadata(for: .id3Metadata)
+                    for item in metadata {
+                        if let key = item.commonKey {
+                            switch key {
+                            case .commonKeyTitle:
+                                track.title = try await item.load(.value) as? String ?? track.title
+                            case .commonKeyArtist:
+                                track.artist = try await item.load(.value) as? String ?? track.artist
+                            default:
+                                break
+                            }
+                        }
+                    }
+
+                    // Получаем продолжительность для каждого трека
+                    if let duration = try? await asset.load(.duration) {
+                        track.duration = duration.seconds
+                        track.totalDuration = duration.seconds
+                    }
+
+                    tracks.append(track)
+                } catch {
+                    throw error
+                }
+            }
+        }
+    }
+
+
+
+
+
 
     // MARK: - Table view data source
 
